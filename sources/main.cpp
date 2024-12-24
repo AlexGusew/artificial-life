@@ -15,7 +15,7 @@ int main(void) {
   while (!WindowShouldClose()) {
     BeginDrawing();
 
-    ClearBackground(BLUE);
+    ClearBackground(GREEN);
 
     const int texture_x = SCREEN_WIDTH / 2 - texture.width / 2;
     const int texture_y = SCREEN_HEIGHT / 2 - texture.height / 2;
