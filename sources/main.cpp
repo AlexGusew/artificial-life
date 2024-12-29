@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <deque>
 #include <iostream>
-#include <stdatomic.h>
+#include <utility>
 #include <vector>
 
 #define SCREEN_WIDTH (800)
@@ -59,21 +59,22 @@ public:
     DrawText(TextFormat("test"), 400, 50, 20, BLACK);
   }
 
-  std::vector<std::vector<Cell *>> GetCells() { return cells; }
+  std::vector<std::vector<Cell *>> &GetCells() { return cells; }
 };
 
 class Organism {
 private:
-  std::vector<Cell> cells;
-  std::deque<Cell> todo;
+  std::vector<Cell *> cells;
+  std::deque<Cell *> todo;
+  std::vector<std::pair<Cell *, Cell *>> edges;
   int health;
   int age;
-  Environment env;
+  Environment &env;
 
 public:
   Organism(int initialHealth, int initialAge, Environment &env)
       : health(initialHealth), age(initialAge), env(env) {
-    cells.push_back(Cell(10, 10));
+    cells.push_back(new Cell(10, 10));
     todo.push_back(cells.front());
   }
 
@@ -83,38 +84,40 @@ public:
 
   int GetAge() const { return age; }
 
-  const std::vector<Cell> &GetCells() const { return cells; }
+  const std::vector<Cell *> &GetCells() const { return cells; }
 
   void Update() {
     age++;
     health--;
     if (!todo.empty()) {
-      Cell cell = todo.front();
+      Cell *cell = todo.front();
       todo.pop_front();
 
-      std::array<std::pair<int, int>, 4> dirs = {
+      std::array<std::pair<int, int>, 4> directions = {
           {{1, 0}, {-1, 0}, {0, 1}, {0, -1}}};
-
-      for (auto &pair : dirs) {
-        int x = cell.GetX() + pair.first;
-        int y = cell.GetY() + pair.second;
-        std::cout << env.GetCells()[x][y] << std::endl;
-        if (x >= 0 && x < ROWS && y >= 0 && y < COLS &&
-            env.GetCells()[x][y] == nullptr) {
-          std::cout << std::size(todo) << " " << x << " " << y << " " << env.GetCells()[x][y] << std::endl;
-          Cell* newCell = new Cell(x, y);
-          env.GetCells()[x][y] = newCell;
-          cells.push_back(*newCell);
-          todo.push_back(*newCell);
+      for (auto &[dx, dy] : directions) {
+        int newX = cell->GetX() + dx;
+        int newY = cell->GetY() + dy;
+        if (newX >= 0 && newX < COLS && newY >= 0 && newY < ROWS &&
+            env.GetCells()[newY][newX] == nullptr) {
+          Cell *newCell = new Cell(newX, newY);
+          env.GetCells()[newY][newX] = newCell;
+          cells.emplace_back(newCell);
+          todo.push_back(newCell);
+          edges.emplace_back(cell, newCell);
         }
       }
     }
   }
 
   void Draw() const {
+    for (auto &[source, dest] : edges) {
+      DrawLine(source->GetX(), source->GetY(), dest->GetX(), dest->GetY(),
+               BLACK);
+    }
     for (auto cell : cells) {
-      DrawCircle(cell.GetX() * CELL_SIZE + CELL_SIZE / 2,
-                 cell.GetY() * CELL_SIZE + CELL_SIZE / 2, CELL_SIZE * 0.3f,
+      DrawCircle(cell->GetX() * CELL_SIZE + CELL_SIZE / 2,
+                 cell->GetY() * CELL_SIZE + CELL_SIZE / 2, CELL_SIZE * 0.3f,
                  BLUE);
     }
     DrawText(TextFormat("Health: %d", health), 200, 50, 20, LIGHTGRAY);
