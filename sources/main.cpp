@@ -56,7 +56,6 @@ public:
             colors[i][j]);
       }
     }
-    DrawText(TextFormat("test"), 400, 50, 20, BLACK);
   }
 
   std::vector<std::vector<Cell *>> &GetCells() { return cells; }
@@ -70,11 +69,13 @@ private:
   int health;
   int age;
   Environment &env;
+  Color color;
 
 public:
-  Organism(int initialHealth, int initialAge, Environment &env)
-      : health(initialHealth), age(initialAge), env(env) {
-    cells.push_back(new Cell(10, 10));
+  Organism(int initialHealth, int initialAge, Environment &env, Color color,
+           Vector2 initialPosition)
+      : health(initialHealth), age(initialAge), env(env), color(color) {
+    cells.push_back(new Cell(initialPosition.x, initialPosition.y));
     todo.push_back(cells.front());
   }
 
@@ -112,16 +113,20 @@ public:
 
   void Draw() const {
     for (auto &[source, dest] : edges) {
-      DrawLine(source->GetX(), source->GetY(), dest->GetX(), dest->GetY(),
-               BLACK);
+      Vector2 startPos = {source->GetX() * CELL_SIZE + CELL_SIZE / 2.0f,
+                          source->GetY() * CELL_SIZE + CELL_SIZE / 2.0f};
+
+      Vector2 endPos = {dest->GetX() * CELL_SIZE + CELL_SIZE / 2.0f,
+                        dest->GetY() * CELL_SIZE + CELL_SIZE / 2.0f};
+      DrawLineEx(startPos, endPos, 3.0f, color);
     }
     for (auto cell : cells) {
       DrawCircle(cell->GetX() * CELL_SIZE + CELL_SIZE / 2,
                  cell->GetY() * CELL_SIZE + CELL_SIZE / 2, CELL_SIZE * 0.3f,
-                 BLUE);
+                 color);
     }
-    DrawText(TextFormat("Health: %d", health), 200, 50, 20, LIGHTGRAY);
-    DrawText(TextFormat("Age: %d", age), 200, 80, 20, LIGHTGRAY);
+    DrawText(TextFormat("Health: %d", health), 400, 50, 20, BLACK);
+    DrawText(TextFormat("Age: %d", age), 400, 80, 20, BLACK);
   }
 };
 
@@ -133,18 +138,31 @@ int main(void) {
   camera.zoom = 1.0f;
 
   Environment *env = new Environment(ROWS, COLS);
-  Organism *organism = new Organism(100, 0, *env);
+
+  std::vector<Organism *> organisms;
+  for (int i = 0; i < 10; i++) {
+    Color color = {(unsigned char)(rand() % 256), (unsigned char)(rand() % 256),
+                   (unsigned char)(rand() % 256), 255};
+    Vector2 position = {(float)(rand() % COLS), (float)(rand() % ROWS)};
+    organisms.emplace_back(new Organism(100, 0, *env, color, position));
+  }
 
   while (!WindowShouldClose()) {
     BeginDrawing();
-    ClearBackground(GREEN);
+    ClearBackground(GRAY);
     BeginMode2D(camera);
 
     env->Update();
-    organism->Update();
 
+    for (auto &org : organisms) {
+      org->Update();
+    }
     env->Draw();
-    organism->Draw();
+
+    for (auto &org : organisms) {
+      org->Draw();
+    }
+    DrawText(TextFormat("Current FPS: %i", GetFPS()), 10, 10, 10, BLACK);
 
     EndMode2D();
     EndDrawing();
