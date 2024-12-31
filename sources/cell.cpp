@@ -16,6 +16,8 @@ public:
   virtual int GetY() { return y; }
 
   virtual void Draw(Color color) {}
+
+  virtual bool IsLeave() const { return false; }
 };
 
 class Leave : public Cell {
@@ -26,6 +28,8 @@ public:
     DrawCircle(x * CELL_SIZE + CELL_SIZE / 2, y * CELL_SIZE + CELL_SIZE / 2,
                CELL_SIZE * 0.3f, color);
   };
+
+  bool IsLeave() const override { return true; }
 };
 
 class Trunk : public Cell {

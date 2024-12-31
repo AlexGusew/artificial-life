@@ -3,6 +3,7 @@
 #include "organism.cpp"
 #include "raylib.h"
 #include <cstdlib>
+#include <raymath.h>
 
 int main(void) {
   SetConfigFlags(FLAG_WINDOW_RESIZABLE);
@@ -21,7 +22,29 @@ int main(void) {
     organisms.emplace_back(new Organism(100, 0, *env, color, position));
   }
 
+  Vector2 mousePosition = {0};
+  Vector2 lastMousePosition = {0};
+
   while (!WindowShouldClose()) {
+    // Camera zooming
+    float wheel = GetMouseWheelMove();
+    if (wheel != 0) {
+      Vector2 mouseWorldPos = GetScreenToWorld2D(GetMousePosition(), camera);
+      camera.zoom += wheel * 0.1f;
+      if (camera.zoom < 0.1f) camera.zoom = 0.1f;
+      Vector2 newMouseWorldPos = GetScreenToWorld2D(GetMousePosition(), camera);
+      Vector2 delta = Vector2Subtract(newMouseWorldPos, mouseWorldPos);
+      camera.target = Vector2Subtract(camera.target, delta);
+    }
+
+    // Camera moving
+    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+      mousePosition = GetMousePosition();
+      Vector2 delta = Vector2Subtract(mousePosition, lastMousePosition);
+      camera.target = Vector2Subtract(camera.target, Vector2Scale(delta, 1.0f / camera.zoom));
+    }
+    lastMousePosition = GetMousePosition();
+
     BeginDrawing();
     ClearBackground(GRAY);
     BeginMode2D(camera);

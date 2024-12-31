@@ -53,7 +53,7 @@ public:
         if (newX >= 0 && newX < COLS && newY >= 0 && newY < ROWS &&
             env.GetCells()[newY][newX] == nullptr) {
           Cell *newCell;
-          if (rand() % 100 < 100) {
+          if (rand() % 100 < 30) {
             newCell = new Leave(newX, newY);
           } else {
             newCell = new Trunk(newX, newY);
