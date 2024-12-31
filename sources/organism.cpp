@@ -52,7 +52,12 @@ public:
         int newY = cell->GetY() + dy;
         if (newX >= 0 && newX < COLS && newY >= 0 && newY < ROWS &&
             env.GetCells()[newY][newX] == nullptr) {
-          Cell *newCell = new Trunk(newX, newY);
+          Cell *newCell;
+          if (rand() % 100 < 100) {
+            newCell = new Leave(newX, newY);
+          } else {
+            newCell = new Trunk(newX, newY);
+          }
           env.GetCells()[newY][newX] = newCell;
           cells.emplace_back(newCell);
           todo.push_back(newCell);
@@ -61,12 +66,14 @@ public:
       }
     }
     /*std::cout << std::size(cells) << std::endl;*/
-    /*for (Cell *cell : cells) {*/
-    /*  auto nutrients = env.GetNutrients();*/
-    /*  // change to variable voricity depending on cell type*/
-    /*  nutrients[cell->GetX()][cell->GetY()] =*/
-    /*      std::max(0, nutrients[cell->GetX()][cell->GetY()] - 1);*/
-    /*}*/
+    auto &nutrients = env.GetNutrients();
+    for (Cell *cell : cells) {
+      if (dynamic_cast<Leave*>(cell)) {
+      // change to variable voracity depending on cell type
+      int& gridItem = nutrients[cell->GetY()][cell->GetX()];
+      gridItem = std::max(0, gridItem - 1);
+      }
+    }
   }
 
   void Draw() const {
@@ -76,10 +83,10 @@ public:
 
       Vector2 endPos = {dest->GetX() * CELL_SIZE + CELL_SIZE / 2.0f,
                         dest->GetY() * CELL_SIZE + CELL_SIZE / 2.0f};
-      DrawLineEx(startPos, endPos, CELL_SIZE / 4.0f, color);
+      DrawLineEx(startPos, endPos, CELL_SIZE / 3.0f, color);
     }
     for (auto cell : cells) {
-      std::cout << typeid(cell).name() << std::endl;
+      /*std::cout << typeid(cell).name() << std::endl;*/
       cell->Draw(color);
     }
     /*DrawText(TextFormat("Health: %d", health), 400, 50, 20, BLACK);*/

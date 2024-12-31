@@ -1,5 +1,3 @@
-#pragma once
-
 #include "constants.h"
 #include "environment.cpp"
 #include "organism.cpp"
@@ -12,11 +10,11 @@ int main(void) {
   SetTargetFPS(60);
   Camera2D camera = {0};
   camera.zoom = 1.0f;
-
+  int frame = 0;
   Environment *env = new Environment(ROWS, COLS);
 
   std::vector<Organism *> organisms;
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < INITIAL_ORGANISMS; i++) {
     Color color = {(unsigned char)(rand() % 256), (unsigned char)(rand() % 256),
                    (unsigned char)(rand() % 256), 255};
     Vector2 position = {(float)(rand() % COLS), (float)(rand() % ROWS)};
@@ -28,16 +26,17 @@ int main(void) {
     ClearBackground(GRAY);
     BeginMode2D(camera);
 
-    env->Update();
-
-    for (auto &org : organisms) {
-      org->Update();
+    for (int i = 0; i < BATCH_SIZE; i++) {
+      env->Update();
+      for (auto &org : organisms) {
+        org->Update();
+      }
     }
     env->Draw();
-
     for (auto &org : organisms) {
       org->Draw();
     }
+
     DrawText(TextFormat("Current FPS: %i", GetFPS()), 10, 10, 10, BLACK);
 
     EndMode2D();
