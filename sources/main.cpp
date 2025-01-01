@@ -39,14 +39,19 @@ int main(void) {
 
     // Camera moving
     if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-      mousePosition = GetMousePosition();
-      Vector2 delta = Vector2Subtract(mousePosition, lastMousePosition);
-      camera.target = Vector2Subtract(camera.target, Vector2Scale(delta, 1.0f / camera.zoom));
+                  Vector2 delta = GetMouseDelta();
+            delta = Vector2Scale(delta, -1.0f/camera.zoom);
+            camera.target = Vector2Add(camera.target, delta);
+
+      // mousePosition = GetMousePosition();
+      // Vector2 delta = Vector2Subtract(mousePosition, lastMousePosition);
+      // camera.target = Vector2Subtract(camera.target, Vector2Scale(delta, 1.0f / camera.zoom));
     }
     lastMousePosition = GetMousePosition();
 
     BeginDrawing();
     ClearBackground(GRAY);
+
     BeginMode2D(camera);
 
     for (int i = 0; i < BATCH_SIZE; i++) {
@@ -60,9 +65,9 @@ int main(void) {
       org->Draw();
     }
 
-    DrawText(TextFormat("Current FPS: %i", GetFPS()), 10, 10, 10, BLACK);
 
     EndMode2D();
+    DrawText(TextFormat("Current FPS: %i", GetFPS()), 10, 10, 10, BLACK);
     EndDrawing();
   }
 

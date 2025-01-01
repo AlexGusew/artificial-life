@@ -45,15 +45,15 @@ public:
       Cell *cell = todo.front();
       todo.pop_front();
 
-      std::array<std::pair<int, int>, 4> directions = {
-          {{1, 0}, {-1, 0}, {0, 1}, {0, -1}}};
+      std::array<std::pair<int, int>, 8> directions = {
+          {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {-1, -1}, {1, 1}, {1, -1}, {-1, 1}}};
       for (auto &[dx, dy] : directions) {
         int newX = cell->GetX() + dx;
         int newY = cell->GetY() + dy;
         if (newX >= 0 && newX < COLS && newY >= 0 && newY < ROWS &&
             env.GetCells()[newY][newX] == nullptr) {
           Cell *newCell;
-          if (rand() % 100 < 30) {
+          if (rand() % 100 < 100) {
             newCell = new Leave(newX, newY);
           } else {
             newCell = new Trunk(newX, newY);
@@ -69,9 +69,9 @@ public:
     auto &nutrients = env.GetNutrients();
     for (Cell *cell : cells) {
       if (dynamic_cast<Leave*>(cell)) {
-      // change to variable voracity depending on cell type
-      int& gridItem = nutrients[cell->GetY()][cell->GetX()];
-      gridItem = std::max(0, gridItem - 1);
+        // change to variable voracity depending on cell type
+        int& gridItem = nutrients[cell->GetY()][cell->GetX()];
+        gridItem = std::max(0, gridItem - 1);
       }
     }
   }

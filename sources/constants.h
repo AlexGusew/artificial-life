@@ -10,4 +10,4 @@
 #define MAX_NUTRIENTS 300
 #define MIN_NUTRIENTS 100
 #define INITIAL_ORGANISMS 10
-#define BATCH_SIZE 30
+#define BATCH_SIZE 30    
