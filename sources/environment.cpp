@@ -16,9 +16,16 @@ public:
   Environment(int rows, int cols)
       : rows(rows), cols(cols), cells(rows, std::vector<Cell *>(cols, nullptr)),
         nutrients(rows, std::vector<int>(cols)) {
+    Init();
+  }
+
+  void Init() {
     for (int i = 0; i < rows; i++) {
       for (int j = 0; j < cols; j++) {
-        nutrients[i][j] = rand() % (MAX_NUTRIENTS - MIN_NUTRIENTS) + MIN_NUTRIENTS;
+        nutrients[i][j] =
+            rand() % (MAX_NUTRIENTS - MIN_NUTRIENTS) + MIN_NUTRIENTS;
+        delete cells[i][j];
+        cells[i][j] = nullptr;
       }
     }
   }
@@ -38,6 +45,18 @@ public:
             color);
       }
     }
+  }
+
+  void Reset() {
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < cols; j++) {
+        if (cells[i][j] != nullptr) {
+          delete cells[i][j];
+          cells[i][j] = nullptr;
+        }
+      }
+    }
+    Init();
   }
 
   std::vector<std::vector<Cell *>> &GetCells() { return cells; }

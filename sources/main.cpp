@@ -4,9 +4,26 @@
 #include "raylib.h"
 #include <cstdlib>
 #include <raymath.h>
+#include <vector>
+
+void initOrganisms(Environment* env, std::vector<Organism *>& organisms) {
+  for (int i = 0; i < INITIAL_ORGANISMS; i++) {
+    Color color = {(unsigned char)(rand() % 256), (unsigned char)(rand() % 256),
+                   (unsigned char)(rand() % 256), 255};
+    Vector2 position = {(float)(rand() % COLS), (float)(rand() % ROWS)};
+    organisms.emplace_back(new Organism(100, 0, *env, color, position));
+  }
+}
+
+void cleanupOrganisms(std::vector<Organism *>& organisms) {
+  for (auto &org : organisms) {
+    delete org;
+  }
+  organisms.clear();
+}
 
 int main(void) {
-  SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+  SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
   SetTargetFPS(60);
   Camera2D camera = {0};
@@ -15,13 +32,7 @@ int main(void) {
   Environment *env = new Environment(ROWS, COLS);
 
   std::vector<Organism *> organisms;
-  for (int i = 0; i < INITIAL_ORGANISMS; i++) {
-    Color color = {(unsigned char)(rand() % 256), (unsigned char)(rand() % 256),
-                   (unsigned char)(rand() % 256), 255};
-    Vector2 position = {(float)(rand() % COLS), (float)(rand() % ROWS)};
-    organisms.emplace_back(new Organism(100, 0, *env, color, position));
-  }
-
+  initOrganisms(env, organisms);
   Vector2 mousePosition = {0};
   Vector2 lastMousePosition = {0};
 
@@ -31,7 +42,8 @@ int main(void) {
     if (wheel != 0) {
       Vector2 mouseWorldPos = GetScreenToWorld2D(GetMousePosition(), camera);
       camera.zoom += wheel * 0.1f;
-      if (camera.zoom < 0.1f) camera.zoom = 0.1f;
+      if (camera.zoom < 0.1f)
+        camera.zoom = 0.1f;
       Vector2 newMouseWorldPos = GetScreenToWorld2D(GetMousePosition(), camera);
       Vector2 delta = Vector2Subtract(newMouseWorldPos, mouseWorldPos);
       camera.target = Vector2Subtract(camera.target, delta);
@@ -39,18 +51,25 @@ int main(void) {
 
     // Camera moving
     if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-                  Vector2 delta = GetMouseDelta();
-            delta = Vector2Scale(delta, -1.0f/camera.zoom);
-            camera.target = Vector2Add(camera.target, delta);
+      Vector2 delta = GetMouseDelta();
+      delta = Vector2Scale(delta, -1.0f / camera.zoom);
+      camera.target = Vector2Add(camera.target, delta);
 
       // mousePosition = GetMousePosition();
       // Vector2 delta = Vector2Subtract(mousePosition, lastMousePosition);
-      // camera.target = Vector2Subtract(camera.target, Vector2Scale(delta, 1.0f / camera.zoom));
+      // camera.target = Vector2Subtract(camera.target, Vector2Scale(delta, 1.0f
+      // / camera.zoom));
     }
     lastMousePosition = GetMousePosition();
 
     BeginDrawing();
     ClearBackground(GRAY);
+
+    if (IsKeyPressed(KEY_R)) {
+      cleanupOrganisms(organisms);
+      env->Reset();
+      initOrganisms(env, organisms);
+    }
 
     BeginMode2D(camera);
 
@@ -65,11 +84,14 @@ int main(void) {
       org->Draw();
     }
 
-
     EndMode2D();
-    DrawText(TextFormat("Current FPS: %i", GetFPS()), 10, 10, 10, BLACK);
+    DrawText(TextFormat("Current FPS: %i\nReset: r", GetFPS()), 10, 10, 10, BLACK);
     EndDrawing();
   }
+
+  // Clean up
+  cleanupOrganisms(organisms);
+  delete env;
 
   CloseWindow();
 
