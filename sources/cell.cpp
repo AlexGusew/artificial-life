@@ -1,38 +1,46 @@
-#pragma once
+#include "cell.h"
 
 #include "constants.h"
+#include "environment.h"
 #include "raylib.h"
 
-class Cell {
-protected:
-  int x;
-  int y;
+Cell::Cell(int x, int y, int initialHealth, int initialAge, Environment &env,
+           Color color)
+    : x(x),
+      y(y),
+      health(initialHealth),
+      age(initialAge),
+      env(env),
+      color(color) {}
 
-public:
-  Cell(int x, int y) : x(x), y(y) {}
+int Cell::GetX() { return x; }
 
-  virtual int GetX() { return x; }
+int Cell::GetY() { return y; }
 
-  virtual int GetY() { return y; }
+int Cell::GetHealth() const { return health; }
+int Cell::GetAge() const { return age; }
+Color Cell::GetColor() const { return color; }
 
-  virtual void Draw(Color color) {}
+void Cell::Update() {
+  age++;
+  health--;
+}
 
-  virtual bool IsLeave() const { return false; }
-};
+void Cell::Draw(Color color) {}
 
-class Leave : public Cell {
-public:
-  Leave(int x, int y) : Cell(x, y) {}
+bool Cell::IsLeave() const { return false; }
 
-  void Draw(Color color) override {
-    DrawCircle(x * CELL_SIZE + CELL_SIZE / 2, y * CELL_SIZE + CELL_SIZE / 2,
-               CELL_SIZE * 0.3f, color);
-  };
+Leave::Leave(int x, int y, int initialHealth, int initialAge, Environment &env,
+             Color color)
+    : Cell(x, y, initialHealth, initialAge, env, color) {}
 
-  bool IsLeave() const override { return true; }
-};
+void Leave::Draw(Color color) {
+  DrawCircle(x * CELL_SIZE + CELL_SIZE / 2, y * CELL_SIZE + CELL_SIZE / 2,
+             CELL_SIZE * 0.3f, color);
+}
 
-class Trunk : public Cell {
-public:
-  Trunk(int x, int y) : Cell(x, y) {}
-};
+bool Leave::IsLeave() const { return true; }
+
+Trunk::Trunk(int x, int y, int initialHealth, int initialAge, Environment &env,
+             Color color)
+    : Cell(x, y, initialHealth, initialAge, env, color) {}

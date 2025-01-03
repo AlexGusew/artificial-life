@@ -1,12 +1,15 @@
-#include "constants.h"
-#include "environment.cpp"
-#include "organism.cpp"
-#include "raylib.h"
-#include <cstdlib>
+#include <raylib.h>
 #include <raymath.h>
+
+#include <cstdlib>
 #include <vector>
+
+#include "constants.h"
+#include "environment.h"
+#include "renderer.h"
+
 #define RAYGUI_IMPLEMENTATION
-#include "raygui.h" 
+#include "raygui.h"
 
 float batchSize = INITIAL_BATCH_SIZE;
 int batchSizeInt = INITIAL_BATCH_SIZE;
@@ -14,28 +17,26 @@ int pause = 0;
 float initialOrganisms = INITIAL_ORGANISMS;
 int initialOrganismsInt = INITIAL_ORGANISMS;
 
-void initOrganisms(Environment *env, std::vector<Organism *> &organisms)
-{
-  for (int i = 0; i < initialOrganismsInt; i++)
-  {
+void initCells(Environment *env, std::vector<Cell *> &cells,
+               Renderer &renderer) {
+  for (int i = 0; i < initialOrganismsInt; i++) {
     Color color = {(unsigned char)(rand() % 256), (unsigned char)(rand() % 256),
                    (unsigned char)(rand() % 256), 255};
     Vector2 position = {(float)(rand() % COLS), (float)(rand() % ROWS)};
-    organisms.emplace_back(new Organism(100, 0, *env, color, position));
+    Cell *cell = new Leave(position.x, position.y, 100, 0, *env, color);
+    cells.push_back(cell);
+    renderer.AddCell(cell);
   }
 }
 
-void cleanupOrganisms(std::vector<Organism *> &organisms)
-{
-  for (auto &org : organisms)
-  {
-    delete org;
+void cleanupCells(std::vector<Cell *> &cells) {
+  for (auto &cell : cells) {
+    delete cell;
   }
-  organisms.clear();
+  cells.clear();
 }
 
-int main(void)
-{
+int main(void) {
   SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
   SetTargetFPS(60);
@@ -43,38 +44,30 @@ int main(void)
   camera.zoom = 1.0f;
   Environment *env = new Environment(ROWS, COLS);
 
-  std::vector<Organism *> organisms;
-  initOrganisms(env, organisms);
+  std::vector<Cell *> cells;
+  Renderer renderer;
+  initCells(env, cells, renderer);
   Vector2 mousePosition = {0};
   Vector2 lastMousePosition = {0};
   GuiSetStyle(DEFAULT, TEXT_COLOR_NORMAL, 0xFFFFFFFF);
 
-  while (!WindowShouldClose())
-  {
+  while (!WindowShouldClose()) {
     // Camera zooming
     float wheel = GetMouseWheelMove();
-    if (wheel != 0)
-    {
+    if (wheel != 0) {
       Vector2 mouseWorldPos = GetScreenToWorld2D(GetMousePosition(), camera);
       camera.zoom += wheel * 0.1f;
-      if (camera.zoom < 0.1f)
-        camera.zoom = 0.1f;
+      if (camera.zoom < 0.1f) camera.zoom = 0.1f;
       Vector2 newMouseWorldPos = GetScreenToWorld2D(GetMousePosition(), camera);
       Vector2 delta = Vector2Subtract(newMouseWorldPos, mouseWorldPos);
       camera.target = Vector2Subtract(camera.target, delta);
     }
 
     // Camera moving
-    if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
-    {
+    if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
       Vector2 delta = GetMouseDelta();
       delta = Vector2Scale(delta, -1.0f / camera.zoom);
       camera.target = Vector2Add(camera.target, delta);
-
-      // mousePosition = GetMousePosition();
-      // Vector2 delta = Vector2Subtract(mousePosition, lastMousePosition);
-      // camera.target = Vector2Subtract(camera.target, Vector2Scale(delta, 1.0f
-      // / camera.zoom));
     }
 
     lastMousePosition = GetMousePosition();
@@ -82,55 +75,39 @@ int main(void)
     BeginDrawing();
     ClearBackground(BLACK);
 
-    if (IsKeyPressed(KEY_R))
-    {
-      cleanupOrganisms(organisms);
+    if (IsKeyPressed(KEY_R)) {
+      cleanupCells(cells);
       env->Reset();
-      initOrganisms(env, organisms);
+      initCells(env, cells, renderer);
     }
 
-    if (IsKeyPressed(KEY_P))
-    {
+    if (IsKeyPressed(KEY_P)) {
       pause = !pause;
     }
 
     BeginMode2D(camera);
-    for (int i = 0; i < batchSizeInt && !pause; i++)
-    {
+    for (int i = 0; i < batchSizeInt && !pause; i++) {
       env->Update();
-      for (auto &org : organisms)
-      {
-        org->Update();
+      renderer.Update(*env);
+      for (auto &cell : cells) {
+        cell->Update();
       }
     }
 
     env->Draw();
-    for (auto &org : organisms)
-    {
-      org->Draw();
-    }
+    renderer.Draw(cells);
 
     EndMode2D();
-    DrawText(
-        TextFormat("Current FPS: %i\nReset: r\nPause: p", GetFPS()),
-        10,
-        10,
-        10,
-        WHITE);
-    GuiSliderBar(
-        (Rectangle){GetScreenWidth() - 140.0f, 20, 120, 20}, // Calculate x position dynamically
-        "Skip frames",
-        TextFormat("%d", (int)batchSize),
-        &batchSize,
-        0,
-        100);
-    GuiSliderBar(
-        (Rectangle){GetScreenWidth() - 140.0f, 50, 120, 20}, // Calculate x position dynamically
-        "Initial organisms",
-        TextFormat("%d", (int)initialOrganisms),
-        &initialOrganisms,
-        0,
-        100);
+    DrawText(TextFormat("Current FPS: %i\nReset: r\nPause: p", GetFPS()), 10,
+             10, 10, WHITE);
+    GuiSliderBar((Rectangle){GetScreenWidth() - 140.0f, 20, 120,
+                             20},  // Calculate x position dynamically
+                 "Skip frames", TextFormat("%d", (int)batchSize), &batchSize, 0,
+                 100);
+    GuiSliderBar((Rectangle){GetScreenWidth() - 140.0f, 50, 120,
+                             20},  // Calculate x position dynamically
+                 "Initial organisms", TextFormat("%d", (int)initialOrganisms),
+                 &initialOrganisms, 0, 100);
     // Convert float to int after using the slider
     initialOrganismsInt = (int)initialOrganisms;
     batchSizeInt = (int)batchSize;
@@ -139,7 +116,7 @@ int main(void)
   }
 
   // Clean up
-  cleanupOrganisms(organisms);
+  cleanupCells(cells);
   delete env;
 
   CloseWindow();
