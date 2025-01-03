@@ -53,19 +53,19 @@ int main(void) {
     BeginDrawing();
     ClearBackground(BLACK);
 
-    if (IsKeyPressed(KEY_R)) {
-      env->Reset();
-      env->initCells(env);
-    }
-
     if (IsKeyPressed(KEY_P)) {
       pause = !pause;
     }
 
     BeginMode2D(camera);
 
-    for (int i = 0; frames++ % 60 == 0 && i < batchSizeInt && !pause; i++) {
+    for (int i = 0; frames++ % 1 == 0 && i < batchSizeInt && !pause; i++) {
       env->Update();
+    }
+
+    if (IsKeyPressed(KEY_R)) {
+      env->Reset();
+      env->initCells(env);
     }
 
     env->Draw();

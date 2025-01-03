@@ -19,7 +19,7 @@ void Environment::initCells(Environment* env) {
     Color color = {(unsigned char)(rand() % 256), (unsigned char)(rand() % 256),
                    (unsigned char)(rand() % 256), 255};
     Vector2 position = {(float)(rand() % COLS), (float)(rand() % ROWS)};
-    Cell* cell = new Leave(position.x, position.y, 100, 0, *env, color);
+    Cell* cell = new Leave(position.x, position.y, 100, 0, *env, color, {0, 0});
     todo.push_back(cell);
   }
 }
@@ -60,12 +60,12 @@ void Environment::Draw() {
       DrawRectangleRec(
           (Rectangle){j * CELL_SIZE, i * CELL_SIZE, CELL_SIZE, CELL_SIZE},
           color);
-      if (grid[i][j] != nullptr) grid[i][j]->Draw();
     }
   }
-  // for (auto& cell : todo) {
-  //   cell->Draw();
-  // }
+  for (auto& cell : todo) {
+    cell->DrawConnection();
+    cell->Draw();
+  }
 }
 
 void Environment::Cleanup() {
@@ -78,7 +78,7 @@ void Environment::Cleanup() {
     }
   }
   for (auto& cell : todo) {
-    cell = nullptr; // Avoid double free by setting pointers to nullptr
+    cell = nullptr;  // Avoid double free by setting pointers to nullptr
   }
   todo.clear();
 }
