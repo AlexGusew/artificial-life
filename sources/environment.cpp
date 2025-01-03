@@ -19,7 +19,8 @@ void Environment::initCells(Environment* env) {
     Color color = {(unsigned char)(rand() % 256), (unsigned char)(rand() % 256),
                    (unsigned char)(rand() % 256), 255};
     Vector2 position = {(float)(rand() % COLS), (float)(rand() % ROWS)};
-    Cell* cell = new Leave(position.x, position.y, 100, 0, *env, color, {0, 0});
+    Cell* cell =
+        new Leave(position.x, position.y, MAX_HEALTH, 0, *env, color, {0, 0});
     todo.push_back(cell);
   }
 }
@@ -37,13 +38,14 @@ void Environment::SafeUpdate() {
   time++;
   std::deque<Cell*> tempTodo = std::move(todo);
   todo.clear();
+  unsigned int HELTH_TO_DIE = 20;
   for (Cell* cell : tempTodo) {
-    if (cell->GetHealth() > 0) {
+    if (cell->GetHealth() > HELTH_TO_DIE) {
       cell->Update();
       todo.push_back(cell);
     } else {
       grid[cell->GetY()][cell->GetX()] = nullptr;
-      nutrients[cell->GetY()][cell->GetX()] += 20;
+      nutrients[cell->GetY()][cell->GetX()] += cell->GetHealth();
       delete cell;
     }
   }

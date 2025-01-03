@@ -1,8 +1,22 @@
 #pragma once
 
+#include <vector>
+
 #include "raylib.h"
 
 class Environment;  // Forward declaration
+
+class Perceptron {
+ public:
+  Perceptron(int inputSize);
+  float Activate(const std::vector<float> &inputs);
+  void Mutate();  // Add mutate method
+
+ private:
+  float Sigmoid(float x);
+  std::vector<float> weights;
+  float bias;  // Add bias member
+};
 
 class Cell {
  public:
@@ -28,6 +42,7 @@ class Cell {
   int health;
   int age;
   Environment &env;
+  Perceptron brain;  // Add perceptron brain
 };
 
 class Leave : public Cell {

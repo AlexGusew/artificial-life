@@ -76,19 +76,18 @@ int main(void) {
     env->Draw();
 
     EndMode2D();
-    DrawText(
-        TextFormat(
-            "Time: %zu\nCurrent FPS: %i\n\nReset: r\nPause: p\nNext frame: n\n",
-            env->GetTime(), GetFPS()),
-        10, 10, 10, WHITE);
+    DrawText(TextFormat("Time: %zu\nCurrent FPS: %i\nCells: %zu\n\nReset: "
+                        "r\nPause: p\nNext frame: n\n",
+                        env->GetTime(), GetFPS(), env->todo.size()),
+             10, 10, 10, WHITE);
     GuiSliderBar((Rectangle){GetScreenWidth() - 140.0f, 20, 120,
                              20},  // Calculate x position dynamically
-                 "Skip frames", TextFormat("%d", (int)batchSize), &batchSize, 0,
+                 "Skip frames", TextFormat("%d", (int)batchSize), &batchSize, 1,
                  100);
     GuiSliderBar((Rectangle){GetScreenWidth() - 140.0f, 50, 120,
                              20},  // Calculate x position dynamically
                  "Initial organisms", TextFormat("%d", (int)initialOrganisms),
-                 &initialOrganisms, 1, 100);
+                 &initialOrganisms, 1, 500);
     // Convert float to int after using the slider
     initialOrganismsInt = (int)initialOrganisms;
     batchSizeInt = (int)batchSize;
