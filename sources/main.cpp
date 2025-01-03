@@ -59,8 +59,13 @@ int main(void) {
 
     BeginMode2D(camera);
 
-    for (int i = 0; frames++ % 1 == 0 && i < batchSizeInt && !pause; i++) {
+    frames++;
+    if (IsKeyPressed(KEY_N)) {
       env->Update();
+    } else {
+      for (int i = 0; frames % 1 == 0 && i < batchSizeInt && !pause; i++) {
+        env->Update();
+      }
     }
 
     if (IsKeyPressed(KEY_R)) {
@@ -71,8 +76,11 @@ int main(void) {
     env->Draw();
 
     EndMode2D();
-    DrawText(TextFormat("Current FPS: %i\nReset: r\nPause: p", GetFPS()), 10,
-             10, 10, WHITE);
+    DrawText(
+        TextFormat(
+            "Time: %zu\nCurrent FPS: %i\n\nReset: r\nPause: p\nNext frame: n\n",
+            env->GetTime(), GetFPS()),
+        10, 10, 10, WHITE);
     GuiSliderBar((Rectangle){GetScreenWidth() - 140.0f, 20, 120,
                              20},  // Calculate x position dynamically
                  "Skip frames", TextFormat("%d", (int)batchSize), &batchSize, 0,
@@ -80,7 +88,7 @@ int main(void) {
     GuiSliderBar((Rectangle){GetScreenWidth() - 140.0f, 50, 120,
                              20},  // Calculate x position dynamically
                  "Initial organisms", TextFormat("%d", (int)initialOrganisms),
-                 &initialOrganisms, 0, 100);
+                 &initialOrganisms, 1, 100);
     // Convert float to int after using the slider
     initialOrganismsInt = (int)initialOrganisms;
     batchSizeInt = (int)batchSize;

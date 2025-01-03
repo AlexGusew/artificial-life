@@ -27,20 +27,26 @@ Color Cell::GetColor() const { return color; }
 void Cell::Update() {
   if (health <= 0) return;  // Skip update if the cell is dead
   age++;
-  health--;
+  int nutrients = std::min(env.GetNutrients()[y][x], 10);
+  env.GetNutrients()[y][x] -= nutrients;
+  health += nutrients - 1;
+
   std::array<std::pair<int, int>, 4> directions = {
       {{1, 0}, {-1, 0}, {0, 1}, {0, -1}}};
   for (auto &[dx, dy] : directions) {
     int newX = x + dx;
     int newY = y + dy;
     if (newX >= 0 && newX < COLS && newY >= 0 && newY < ROWS &&
-        env.GetGrid()[newY][newX] == nullptr) {
+        env.GetGrid()[newY][newX] == nullptr && health > 30 &&
+        rand() % 100 < 30) {
       Cell *newCell;
       Vector2 direction = {static_cast<float>(dx), static_cast<float>(dy)};
       if (rand() % 100 < 50) {
-        newCell = new Leave(newX, newY, 100, 0, env, color, direction);
+        newCell = new Leave(newX, newY, health / 2, 0, env, color, direction);
+        health /= 2;
       } else {
-        newCell = new Trunk(newX, newY, 100, 0, env, color, direction);
+        newCell = new Trunk(newX, newY, health / 2, 0, env, color, direction);
+        health /= 2;
       }
       env.GetGrid()[newY][newX] = newCell;
       env.todo.push_back(newCell);

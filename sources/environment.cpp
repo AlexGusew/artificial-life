@@ -34,6 +34,7 @@ void Environment::Init() {
 }
 
 void Environment::SafeUpdate() {
+  time++;
   std::deque<Cell*> tempTodo = std::move(todo);
   todo.clear();
   for (Cell* cell : tempTodo) {
@@ -42,6 +43,7 @@ void Environment::SafeUpdate() {
       todo.push_back(cell);
     } else {
       grid[cell->GetY()][cell->GetX()] = nullptr;
+      nutrients[cell->GetY()][cell->GetX()] += 20;
       delete cell;
     }
   }
@@ -80,8 +82,11 @@ void Environment::Cleanup() {
   for (auto& cell : todo) {
     cell = nullptr;  // Avoid double free by setting pointers to nullptr
   }
+  time = 0;
   todo.clear();
 }
+
+unsigned int Environment::GetTime() { return time; }
 
 void Environment::Reset() {
   Cleanup();

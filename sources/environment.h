@@ -17,7 +17,7 @@ class Environment {
   void initCells(Environment* env);
   void Cleanup();
   void SafeUpdate();
-
+  unsigned int GetTime();
   std::deque<Cell*> todo;
   ~Environment();
 
@@ -26,4 +26,5 @@ class Environment {
   std::vector<std::vector<int>> nutrients;
   int rows;
   int cols;
+  unsigned int time;
 };
