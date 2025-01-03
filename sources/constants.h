@@ -11,4 +11,7 @@
 #define MIN_NUTRIENTS 100
 #define INITIAL_ORGANISMS 50
 
-#define INITIAL_BATCH_SIZE 30
+#define INITIAL_BATCH_SIZE 1
+
+extern int batchSizeInt;
+extern int initialOrganismsInt;

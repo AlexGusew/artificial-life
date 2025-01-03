@@ -1,5 +1,6 @@
 #pragma once
 
+#include <deque>
 #include <vector>
 
 #include "cell.h"
@@ -11,11 +12,17 @@ class Environment {
   void Update();
   void Draw();
   void Reset();
-  std::vector<std::vector<Cell*>>& GetCells();
+  std::vector<std::vector<Cell*>>& GetGrid();
   std::vector<std::vector<int>>& GetNutrients();
+  void initCells(Environment* env);
+  void Cleanup();
+  void SafeUpdate();
+
+  std::deque<Cell*> todo;
+  ~Environment();
 
  private:
-  std::vector<std::vector<Cell*>> cells;
+  std::vector<std::vector<Cell*>> grid;
   std::vector<std::vector<int>> nutrients;
   int rows;
   int cols;

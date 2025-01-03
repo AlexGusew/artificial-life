@@ -8,9 +8,20 @@
 Environment::Environment(int rows, int cols)
     : rows(rows),
       cols(cols),
-      cells(rows, std::vector<Cell*>(cols, nullptr)),
-      nutrients(rows, std::vector<int>(cols)) {
+      grid(rows, std::vector<Cell*>(cols, nullptr)),
+      nutrients(rows, std::vector<int>(cols)),
+      todo() {
   Init();
+}
+
+void Environment::initCells(Environment* env) {
+  for (int i = 0; i < initialOrganismsInt; i++) {
+    Color color = {(unsigned char)(rand() % 256), (unsigned char)(rand() % 256),
+                   (unsigned char)(rand() % 256), 255};
+    Vector2 position = {(float)(rand() % COLS), (float)(rand() % ROWS)};
+    Cell* cell = new Leave(position.x, position.y, 100, 0, *env, color);
+    todo.push_back(cell);
+  }
 }
 
 void Environment::Init() {
@@ -18,13 +29,25 @@ void Environment::Init() {
     for (int j = 0; j < cols; j++) {
       nutrients[i][j] =
           rand() % (MAX_NUTRIENTS - MIN_NUTRIENTS) + MIN_NUTRIENTS;
-      delete cells[i][j];
-      cells[i][j] = nullptr;
     }
   }
 }
 
-void Environment::Update() {}
+void Environment::SafeUpdate() {
+  std::deque<Cell*> tempTodo = std::move(todo);
+  todo.clear();
+  for (Cell* cell : tempTodo) {
+    if (cell->GetHealth() > 0) {
+      cell->Update();
+      todo.push_back(cell);
+    } else {
+      grid[cell->GetY()][cell->GetX()] = nullptr;
+      delete cell;
+    }
+  }
+}
+
+void Environment::Update() { SafeUpdate(); }
 
 void Environment::Draw() {
   for (int i = 0; i < rows; i++) {
@@ -37,21 +60,35 @@ void Environment::Draw() {
       DrawRectangleRec(
           (Rectangle){j * CELL_SIZE, i * CELL_SIZE, CELL_SIZE, CELL_SIZE},
           color);
+      if (grid[i][j] != nullptr) grid[i][j]->Draw();
     }
   }
+  // for (auto& cell : todo) {
+  //   cell->Draw();
+  // }
 }
 
-void Environment::Reset() {
+void Environment::Cleanup() {
   for (int i = 0; i < rows; i++) {
     for (int j = 0; j < cols; j++) {
-      if (cells[i][j] != nullptr) {
-        delete cells[i][j];
-        cells[i][j] = nullptr;
+      if (grid[i][j] != nullptr) {
+        delete grid[i][j];
+        grid[i][j] = nullptr;
       }
     }
   }
+  for (auto& cell : todo) {
+    cell = nullptr; // Avoid double free by setting pointers to nullptr
+  }
+  todo.clear();
+}
+
+void Environment::Reset() {
+  Cleanup();
   Init();
 }
 
-std::vector<std::vector<Cell*>>& Environment::GetCells() { return cells; }
+Environment::~Environment() { Cleanup(); }
+
+std::vector<std::vector<Cell*>>& Environment::GetGrid() { return grid; }
 std::vector<std::vector<int>>& Environment::GetNutrients() { return nutrients; }

@@ -2,11 +2,9 @@
 #include <raymath.h>
 
 #include <cstdlib>
-#include <vector>
 
 #include "constants.h"
 #include "environment.h"
-#include "renderer.h"
 
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
@@ -16,25 +14,7 @@ int batchSizeInt = INITIAL_BATCH_SIZE;
 int pause = 0;
 float initialOrganisms = INITIAL_ORGANISMS;
 int initialOrganismsInt = INITIAL_ORGANISMS;
-
-void initCells(Environment *env, std::vector<Cell *> &cells,
-               Renderer &renderer) {
-  for (int i = 0; i < initialOrganismsInt; i++) {
-    Color color = {(unsigned char)(rand() % 256), (unsigned char)(rand() % 256),
-                   (unsigned char)(rand() % 256), 255};
-    Vector2 position = {(float)(rand() % COLS), (float)(rand() % ROWS)};
-    Cell *cell = new Leave(position.x, position.y, 100, 0, *env, color);
-    cells.push_back(cell);
-    renderer.AddCell(cell);
-  }
-}
-
-void cleanupCells(std::vector<Cell *> &cells) {
-  for (auto &cell : cells) {
-    delete cell;
-  }
-  cells.clear();
-}
+int frames = 0;
 
 int main(void) {
   SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
@@ -43,10 +23,8 @@ int main(void) {
   Camera2D camera = {0};
   camera.zoom = 1.0f;
   Environment *env = new Environment(ROWS, COLS);
+  env->initCells(env);
 
-  std::vector<Cell *> cells;
-  Renderer renderer;
-  initCells(env, cells, renderer);
   Vector2 mousePosition = {0};
   Vector2 lastMousePosition = {0};
   GuiSetStyle(DEFAULT, TEXT_COLOR_NORMAL, 0xFFFFFFFF);
@@ -76,9 +54,8 @@ int main(void) {
     ClearBackground(BLACK);
 
     if (IsKeyPressed(KEY_R)) {
-      cleanupCells(cells);
       env->Reset();
-      initCells(env, cells, renderer);
+      env->initCells(env);
     }
 
     if (IsKeyPressed(KEY_P)) {
@@ -86,16 +63,12 @@ int main(void) {
     }
 
     BeginMode2D(camera);
-    for (int i = 0; i < batchSizeInt && !pause; i++) {
+
+    for (int i = 0; frames++ % 60 == 0 && i < batchSizeInt && !pause; i++) {
       env->Update();
-      renderer.Update(*env);
-      for (auto &cell : cells) {
-        cell->Update();
-      }
     }
 
     env->Draw();
-    renderer.Draw(cells);
 
     EndMode2D();
     DrawText(TextFormat("Current FPS: %i\nReset: r\nPause: p", GetFPS()), 10,
@@ -115,8 +88,6 @@ int main(void) {
     EndDrawing();
   }
 
-  // Clean up
-  cleanupCells(cells);
   delete env;
 
   CloseWindow();
