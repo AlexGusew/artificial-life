@@ -7,7 +7,7 @@
 
 class Environment {
  public:
-  Environment(int rows, int cols, Camera2D camera);
+  Environment(int rows, int cols, Camera2D& camera);
   void Init();
   void Update();
   void Draw();
@@ -29,5 +29,5 @@ class Environment {
   int rows;
   int cols;
   unsigned int time;
-  Camera2D camera;
+  Camera2D& camera;
 };

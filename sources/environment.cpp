@@ -6,7 +6,8 @@
 #include "constants.h"
 #include "raylib.h"
 
-Environment::Environment(int rows, int cols, Camera2D camera)
+Environment::Environment(int rows, int cols,
+                         Camera2D& camera)  // Pass camera by reference
     : rows(rows),
       cols(cols),
       grid(rows, std::vector<Cell*>(cols, nullptr)),
@@ -72,15 +73,14 @@ void Environment::Draw() {
     cell->DrawConnection();
     cell->Draw();
   }
-  if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-    Vector2 mouseWorldPos = GetScreenToWorld2D(GetMousePosition(), camera);
-    int x = mouseWorldPos.x / CELL_SIZE;
-    int y = mouseWorldPos.y / CELL_SIZE;
-    if (x >= 0 && x < cols && y >= 0 && y < rows) {
-      selectedCell = {static_cast<float>(x), static_cast<float>(y)};
-    } else {
-      selectedCell = {-1, -1};
-    }
+
+  Vector2 mouseWorldPos = GetScreenToWorld2D(GetMousePosition(), camera);
+  float x = mouseWorldPos.x / CELL_SIZE;
+  float y = mouseWorldPos.y / CELL_SIZE;
+  if (x >= 0 && x < cols && y >= 0 && y < rows) {
+    selectedCell = {x, y};
+  } else {
+    selectedCell = {-1, -1};
   }
 }
 
