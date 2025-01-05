@@ -11,6 +11,8 @@ class Perceptron {
   Perceptron(int inputSize);
   float Activate(const std::vector<float> &inputs);
   void Mutate();  // Add mutate method
+  const std::vector<float> &GetWeights() const;
+  float GetBias() const;
 
  private:
   float Sigmoid(float x);
@@ -31,6 +33,7 @@ class Cell {
   virtual void Draw();
   virtual bool IsLeave() const;
   void DrawConnection();
+  Perceptron brain;  // Add perceptron brain
 
  protected:
   int x;
@@ -42,7 +45,6 @@ class Cell {
   int health;
   int age;
   Environment &env;
-  Perceptron brain;  // Add perceptron brain
 };
 
 class Leave : public Cell {

@@ -41,6 +41,14 @@ void Perceptron::Mutate() {
   }
 }
 
+const std::vector<float>& Perceptron::GetWeights() const {
+  return weights;
+}
+
+float Perceptron::GetBias() const {
+  return bias;
+}
+
 Cell::Cell(int x, int y, int initialHealth, int initialAge, Environment &env,
            Color color, Vector2 direction)
     : x(x),
@@ -88,7 +96,7 @@ void Cell::Update() {
         newCell = new Trunk(newX, newY, health / 2, 0, env, color, direction);
         health /= 2;
       }
-      if (rand() % 100 < 1) {     // 1% chance to mutate
+      if (rand() % 100 < 30) {     // 1% chance to mutate
         newCell->brain.Mutate();  // Call mutate on the brain
       }
       env.GetGrid()[newY][newX] = newCell;

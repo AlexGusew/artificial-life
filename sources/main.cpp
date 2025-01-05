@@ -22,7 +22,7 @@ int main(void) {
   SetTargetFPS(60);
   Camera2D camera = {0};
   camera.zoom = 1.0f;
-  Environment *env = new Environment(ROWS, COLS);
+  Environment *env = new Environment(ROWS, COLS, camera);
   env->initCells(env);
 
   Vector2 mousePosition = {0};
@@ -91,6 +91,10 @@ int main(void) {
     // Convert float to int after using the slider
     initialOrganismsInt = (int)initialOrganisms;
     batchSizeInt = (int)batchSize;
+
+    if (env->selectedCell.x >= 0 && env->selectedCell.y >= 0) {
+      env->PrintCellData();
+    }
 
     EndDrawing();
   }

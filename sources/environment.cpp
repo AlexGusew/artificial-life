@@ -1,16 +1,18 @@
 #include "environment.h"
 
 #include <cstdlib>
+#include <iostream>
 
 #include "constants.h"
 #include "raylib.h"
 
-Environment::Environment(int rows, int cols)
+Environment::Environment(int rows, int cols, Camera2D camera)
     : rows(rows),
       cols(cols),
       grid(rows, std::vector<Cell*>(cols, nullptr)),
       nutrients(rows, std::vector<int>(cols)),
-      todo() {
+      todo(),
+      camera(camera) {
   Init();
 }
 
@@ -40,7 +42,7 @@ void Environment::SafeUpdate() {
   todo.clear();
   unsigned int HELTH_TO_DIE = 20;
   for (Cell* cell : tempTodo) {
-    if (cell->GetHealth() > HELTH_TO_DIE) {
+    if (cell->GetHealth() > HELTH_TO_DIE && cell->GetAge() < MAX_AGE) {
       cell->Update();
       todo.push_back(cell);
     } else {
@@ -69,6 +71,16 @@ void Environment::Draw() {
   for (auto& cell : todo) {
     cell->DrawConnection();
     cell->Draw();
+  }
+  if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+    Vector2 mouseWorldPos = GetScreenToWorld2D(GetMousePosition(), camera);
+    int x = mouseWorldPos.x / CELL_SIZE;
+    int y = mouseWorldPos.y / CELL_SIZE;
+    if (x >= 0 && x < cols && y >= 0 && y < rows) {
+      selectedCell = {static_cast<float>(x), static_cast<float>(y)};
+    } else {
+      selectedCell = {-1, -1};
+    }
   }
 }
 
@@ -99,3 +111,26 @@ Environment::~Environment() { Cleanup(); }
 
 std::vector<std::vector<Cell*>>& Environment::GetGrid() { return grid; }
 std::vector<std::vector<int>>& Environment::GetNutrients() { return nutrients; }
+
+void Environment::PrintCellData() {
+  int x = selectedCell.x, y = selectedCell.y;
+  if (grid[y][x] != nullptr) {
+    Cell* cell = grid[y][x];
+    std::string cellData =
+        "Cell at (" + std::to_string(x) + ", " + std::to_string(y) + "):\n";
+    cellData += "  Health: " + std::to_string(cell->GetHealth()) + "\n";
+    cellData += "  Age: " + std::to_string(cell->GetAge()) + "\n";
+    cellData += "  Color: (" + std::to_string((int)cell->GetColor().r) + ", " +
+                std::to_string((int)cell->GetColor().g) + ", " +
+                std::to_string((int)cell->GetColor().b) + ")\n";
+    cellData += "  Brain weights:\n";
+    const auto& weights = cell->brain.GetWeights();
+    cellData += "    Age weight: " + std::to_string(weights[0]) + "\n";
+    cellData += "    Health weight: " + std::to_string(weights[1]) + "\n";
+    cellData += "    Nutrients weight: " + std::to_string(weights[2]) + "\n";
+    cellData += "  Brain bias: " + std::to_string(cell->brain.GetBias()) + "\n";
+
+    DrawText(cellData.c_str(), GetScreenWidth() - 200, GetScreenHeight() - 400,
+             20, WHITE);
+  }
+}

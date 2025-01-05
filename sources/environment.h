@@ -7,7 +7,7 @@
 
 class Environment {
  public:
-  Environment(int rows, int cols);
+  Environment(int rows, int cols, Camera2D camera);
   void Init();
   void Update();
   void Draw();
@@ -18,8 +18,10 @@ class Environment {
   void Cleanup();
   void SafeUpdate();
   unsigned int GetTime();
+  void PrintCellData();
   std::deque<Cell*> todo;
   ~Environment();
+  Vector2 selectedCell;
 
  private:
   std::vector<std::vector<Cell*>> grid;
@@ -27,4 +29,5 @@ class Environment {
   int rows;
   int cols;
   unsigned int time;
+  Camera2D camera;
 };
