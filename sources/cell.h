@@ -4,20 +4,20 @@
 
 #include "raylib.h"
 
-class Environment;  // Forward declaration
+class Environment;
 
 class Perceptron {
  public:
   Perceptron(int inputSize);
   float Activate(const std::vector<float> &inputs);
-  void Mutate();  // Add mutate method
+  void Mutate();
   const std::vector<float> &GetWeights() const;
   float GetBias() const;
 
  private:
   float Sigmoid(float x);
   std::vector<float> weights;
-  float bias;  // Add bias member
+  float bias;
 };
 
 class Cell {
@@ -33,7 +33,7 @@ class Cell {
   virtual void Draw();
   virtual bool IsLeave() const;
   void DrawConnection();
-  Perceptron brain;  // Add perceptron brain
+  Perceptron brain;
 
  protected:
   int x;

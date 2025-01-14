@@ -1,13 +1,11 @@
 #include "environment.h"
 
 #include <cstdlib>
-#include <iostream>
 
 #include "constants.h"
 #include "raylib.h"
 
-Environment::Environment(int rows, int cols,
-                         Camera2D& camera)  // Pass camera by reference
+Environment::Environment(int rows, int cols, Camera2D& camera)
     : rows(rows),
       cols(cols),
       grid(rows, std::vector<Cell*>(cols, nullptr)),
@@ -94,7 +92,7 @@ void Environment::Cleanup() {
     }
   }
   for (auto& cell : todo) {
-    cell = nullptr;  // Avoid double free by setting pointers to nullptr
+    cell = nullptr;
   }
   time = 0;
   todo.clear();

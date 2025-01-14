@@ -30,7 +30,6 @@ int main(void) {
   GuiSetStyle(DEFAULT, TEXT_COLOR_NORMAL, 0xFFFFFFFF);
 
   while (!WindowShouldClose()) {
-    // Camera zooming
     float wheel = GetMouseWheelMove();
     if (wheel != 0) {
       Vector2 mouseWorldPos = GetScreenToWorld2D(GetMousePosition(), camera);
@@ -41,7 +40,6 @@ int main(void) {
       camera.target = Vector2Subtract(camera.target, delta);
     }
 
-    // Camera moving
     if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
       Vector2 delta = GetMouseDelta();
       delta = Vector2Scale(delta, -1.0f / camera.zoom);
@@ -80,15 +78,13 @@ int main(void) {
                         "r\nPause: p\nNext frame: n\n",
                         env->GetTime(), GetFPS(), env->todo.size()),
              10, 10, 10, WHITE);
-    GuiSliderBar((Rectangle){GetScreenWidth() - 140.0f, 20, 120,
-                             20},  // Calculate x position dynamically
+    GuiSliderBar((Rectangle){GetScreenWidth() - 140.0f, 20, 120, 20},
                  "Skip frames", TextFormat("%d", (int)batchSize), &batchSize, 1,
                  100);
-    GuiSliderBar((Rectangle){GetScreenWidth() - 140.0f, 50, 120,
-                             20},  // Calculate x position dynamically
+    GuiSliderBar((Rectangle){GetScreenWidth() - 140.0f, 50, 120, 20},
                  "Initial organisms", TextFormat("%d", (int)initialOrganisms),
                  &initialOrganisms, 1, 500);
-    // Convert float to int after using the slider
+
     initialOrganismsInt = (int)initialOrganisms;
     batchSizeInt = (int)batchSize;
 

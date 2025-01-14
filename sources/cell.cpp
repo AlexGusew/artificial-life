@@ -12,11 +12,9 @@
 
 Perceptron::Perceptron(int inputSize) : weights(inputSize), bias(1.0f) {
   for (auto &weight : weights) {
-    // Initialize weights randomly between -1 and 1
     weight = static_cast<float>(rand()) / RAND_MAX * 2 - 1;
   }
-  bias = static_cast<float>(rand()) / RAND_MAX * 2 -
-         1;  // Initialize bias randomly between -1 and 1
+  bias = static_cast<float>(rand()) / RAND_MAX * 2 - 1;
 }
 
 float Perceptron::Activate(const std::vector<float> &inputs) {
@@ -24,7 +22,7 @@ float Perceptron::Activate(const std::vector<float> &inputs) {
   for (size_t i = 0; i < inputs.size(); ++i) {
     sum += inputs[i] * weights[i];
   }
-  sum += bias;  // Add bias to the sum
+  sum += bias;
   return Sigmoid(sum);
 }
 
@@ -32,22 +30,16 @@ float Perceptron::Sigmoid(float x) { return 1.0f / (1.0f + exp(-x)); }
 
 void Perceptron::Mutate() {
   if (rand() % 2 == 0) {
-    // Mutate one of the weights
     int index = rand() % weights.size();
     weights[index] += static_cast<float>(rand()) / RAND_MAX * 0.2f - 0.1f;
   } else {
-    // Mutate the bias
     bias += static_cast<float>(rand()) / RAND_MAX * 0.2f - 0.1f;
   }
 }
 
-const std::vector<float>& Perceptron::GetWeights() const {
-  return weights;
-}
+const std::vector<float> &Perceptron::GetWeights() const { return weights; }
 
-float Perceptron::GetBias() const {
-  return bias;
-}
+float Perceptron::GetBias() const { return bias; }
 
 Cell::Cell(int x, int y, int initialHealth, int initialAge, Environment &env,
            Color color, Vector2 direction)
@@ -58,7 +50,7 @@ Cell::Cell(int x, int y, int initialHealth, int initialAge, Environment &env,
       env(env),
       color(color),
       direction(direction),
-      brain(3) {}  // Initialize perceptron with 3 inputs
+      brain(3) {}
 
 int Cell::GetX() { return x; }
 
@@ -69,13 +61,12 @@ int Cell::GetAge() const { return age; }
 Color Cell::GetColor() const { return color; }
 
 void Cell::Update() {
-  if (health <= 0) return;  // Skip update if the cell is dead
+  if (health <= 0) return;
   age++;
   int nutrients = std::min(env.GetNutrients()[y][x], 10);
   env.GetNutrients()[y][x] -= nutrients;
   health += nutrients - 1;
 
-  // brain with perceptron
   std::vector<float> inputs = {
       age / (float)MAX_AGE, static_cast<float>(health) / MAX_HEALTH,
       static_cast<float>(env.GetNutrients()[y][x]) / MAX_NUTRIENTS};
@@ -84,8 +75,8 @@ void Cell::Update() {
   std::array<std::pair<int, int>, 4> directions = {
       {{1, 0}, {-1, 0}, {0, 1}, {0, -1}}};
   for (auto &[dx, dy] : directions) {
-    int newX = (x + dx + COLS) % COLS;  // Wrap around horizontally
-    int newY = (y + dy + ROWS) % ROWS;  // Wrap around vertically
+    int newX = (x + dx + COLS) % COLS;
+    int newY = (y + dy + ROWS) % ROWS;
     if (env.GetGrid()[newY][newX] == nullptr && decision > 0.5f) {
       Cell *newCell;
       Vector2 direction = {static_cast<float>(dx), static_cast<float>(dy)};
@@ -96,8 +87,8 @@ void Cell::Update() {
         newCell = new Trunk(newX, newY, health / 2, 0, env, color, direction);
         health /= 2;
       }
-      if (rand() % 100 < 30) {     // 1% chance to mutate
-        newCell->brain.Mutate();  // Call mutate on the brain
+      if (rand() % 100 < 30) {
+        newCell->brain.Mutate();
       }
       env.GetGrid()[newY][newX] = newCell;
       env.todo.push_back(newCell);
